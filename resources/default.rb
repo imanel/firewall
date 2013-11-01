@@ -22,6 +22,9 @@ actions :enable, :disable
 
 attribute :log_level, :kind_of => Symbol, :equal_to => [:low, :medium, :high, :full], :default => :low
 
+attribute :incoming_default, :kind_of => Symbol, :equal_to => [:allow, :deny, :reject]
+attribute :outgoing_default, :kind_of => Symbol, :equal_to => [:allow, :deny, :reject]
+
 def initialize(name, run_context = nil)
   super
   set_platform_default_providers

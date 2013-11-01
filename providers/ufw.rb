@@ -32,6 +32,9 @@ action :enable do
     end
     new_resource.updated_by_last_action(true)
   end
+
+  set_default :incoming, new_resource.incoming_default
+  set_default :outgoing, new_resource.outgoing_default
 end
 
 action :disable do
@@ -49,5 +52,23 @@ def active?
   @active ||= begin
     cmd = shell_out!('ufw status')
     cmd.stdout =~ /^Status:\sactive/
+  end
+end
+
+def set_default(default, action)
+  return unless action && !default_set?(default, action)
+  converge_by("Changing #{default} connections default to #{action}") do
+    shell_out!("ufw default #{action} #{default}")
+  end
+  Chef::Log.info("ufw: default #{action} #{default}")
+end
+
+def default_set?(default, action)
+  return false unless status = shell_out!('ufw status verbose').stdout.match(/^Default: (.*) \(incoming\), (.*) \(outgoing\)$/)
+
+  case default
+    when :incoming then status[1] == action.to_s
+    when :outgoing then status[2] == action.to_s
+    else false
   end
 end
